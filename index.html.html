@@ -1,0 +1,2109 @@
+<html lang="es"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alice - Tránsito</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root { --blue: #0d2c56; }
+        body { background: #f0f2f5; font-family: -apple-system, sans-serif; padding-bottom: 120px; }
+        
+        /* Botón de pánico para WhatsApp */
+        #panicButton {
+            display: none; background: #ff4757; color: white;
+            text-align: center; padding: 15px; font-weight: bold;
+            text-decoration: none; border-bottom: 3px solid #c0392b;
+        }
+
+        .header { position: sticky; top: 0; z-index: 100; background: white; padding: 10px; border-bottom: 4px solid var(--blue); }
+        
+        .search-container { background: #eee; padding: 10px; border-radius: 12px; margin: 8px 0; }
+        #searchInput { 
+            width: 100%; border: 2px solid var(--blue); border-radius: 8px; 
+            padding: 12px; font-size: 16px; margin-bottom: 8px;
+        }
+        .btn-go { width: 100%; background: var(--blue); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; }
+
+        .kpi { background: var(--blue); color: white; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        @media (max-width: 768px) {
+            .table thead { display: none; }
+            tr { display: block; background: white; margin-bottom: 15px; border-radius: 12px; padding: 12px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+            td { display: flex; justify-content: space-between; padding: 6px 0; border: none; }
+            td::before { content: attr(data-label); font-weight: 800; color: var(--blue); font-size: 10px; text-transform: uppercase; width: 40%; }
+            .desc-box { display: block !important; background: #f8f9fa; padding: 10px !important; border-radius: 6px; margin-top: 5px; border-left: 4px solid var(--blue); }
+            .desc-box::before { display: block; margin-bottom: 4px; }
+            .val-desc { font-weight: bold; color: #000; font-size: 1.1rem; display: block; line-height: 1.2; }
+        }
+        .footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 12px; border-top: 1px solid #ccc; z-index: 500; }
+    </style>
+</head>
+<body>
+
+    <a href="#" id="panicButton" onclick="forceExternal()">⚠️ EL BUSCADOR NO FUNCIONA? TOCA AQUÍ</a>
+
+    <div class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="fw-bold" style="color:var(--blue)">ALICE NEUMÁTICOS</small>
+                <span id="dateTag" class="badge bg-light text-dark">V 5.0</span>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Escriba Medida o Código..." inputmode="text">
+                <button type="button" class="btn-go" onclick="runSearch()">VER RESULTADOS</button>
+            </div>
+
+            <div class="kpi">
+                <small>UNIDADES TOTALES:</small>
+                <b id="totalCount" style="font-size: 1.3rem;">24.664</b>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-2">
+        <div id="empty" class="text-center py-5 text-muted" style="display: none;">Cargue su archivo Excel.</div>
+        <table class="table"><tbody id="mainDisplay"><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9248</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-15LT/12 T4  ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>50</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9202</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">11L-16 8PR I-1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>5</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9227</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-12  SP900  ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>2</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9239</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">26.5-25-28PR TL L5 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9221</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">23.5-25 20PR L-3/E-3 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>10</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9212</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5 14PR RG600 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9236</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5-14PR TL L4B ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9203</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">19.5L-24 14PR R-4A TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>26</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00314-2</td>
+                    <td data-label="CÓDIGO">ANV9209</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">16.9-28 12PR R-4A TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>14</b></td>
+                    <td data-label="ETD">12/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">01/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9122</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-16 12PR QH672  SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9102</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">13.6-24 10PR QH651 R-2 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>4</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9115</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-24 12PR QH611 R-1 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>28</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9103</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-24 12PR QH651 R-2 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>4</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9109</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">23.1-30 16PR QH651 R-2 TT FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>14</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9107</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">20.8-38 12PR QH651 R-2 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>14</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9111</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.4-24 12PR QH611 R-1 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>44</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9121</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">6.50-16 10PR QH671 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>80</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9126</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5-24 8PR QH611 R-1 TT SET FORERUNNER</span></td>
+                    <td data-label="CANTIDAD"><b>18</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9101</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.4-24 12PR QH651 R-2 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9102</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">13.6-24 10PR QH651 R-2 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9103</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-24 12PR QH651 R-2 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9123</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-28 12PR QH612 R-1 TT SET FORERUNNER</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9105</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-30 12PR QH651 R-2 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>10</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00410</td>
+                    <td data-label="CÓDIGO">ANV9106</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-38 12PR QH651 R-2 TT SET FORERUNNER </span></td>
+                    <td data-label="CANTIDAD"><b>14</b></td>
+                    <td data-label="ETD">05/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">02/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00236-3</td>
+                    <td data-label="CÓDIGO">ANV9031</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">255/70R22.5 16PR TL SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>160</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">14/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00236-3</td>
+                    <td data-label="CÓDIGO">ANV9026</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR168 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>140</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">14/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00236-3</td>
+                    <td data-label="CÓDIGO">ANV9013</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>140</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">14/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00236-3</td>
+                    <td data-label="CÓDIGO">ANV9026</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR168 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>124</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">14/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00901</td>
+                    <td data-label="CÓDIGO">ANV1901</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT265/75R16 123/120R  ALIX  IMPACT A/T PLUS</span></td>
+                    <td data-label="CANTIDAD"><b>520</b></td>
+                    <td data-label="ETD">05/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">14/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.1</td>
+                    <td data-label="CÓDIGO">ANV9011</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12R22.5 18PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>65</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">17/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.1</td>
+                    <td data-label="CÓDIGO">ANV9027</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">275/70R22.5&nbsp;18PR SR198 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>107</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">17/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.1</td>
+                    <td data-label="CÓDIGO">ANV9017</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR 156/150M SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">17/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.1</td>
+                    <td data-label="CÓDIGO">ANV9014</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>10</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">17/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.1</td>
+                    <td data-label="CÓDIGO">ANV9043</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 12.00R24 20PR SR298</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">17/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.1</td>
+                    <td data-label="CÓDIGO">ANV9027</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">275/70R22.5&nbsp;18PR SR198 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>64</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">17/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.1</td>
+                    <td data-label="CÓDIGO">ANV9013</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>210</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">17/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9301</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">185/60R15 Journey-X 88H XL</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9345</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">185/65R15 92H Journey-X GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>72</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9346</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">195/50R15 82V Journey-X GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>52</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9326</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">195/55R15  85V Journey-X</span></td>
+                    <td data-label="CANTIDAD"><b>52</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9347</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">195/65R15 91V Journey-X GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9348</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">205/65R15 94H Journey-X GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>52</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9302</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">205/70R15 Journey-X 96H</span></td>
+                    <td data-label="CANTIDAD"><b>52</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9304</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">205/60R16 Journey-X 92V</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9323</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/65R16 Journey-X HP 98H</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9351</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/45ZR17 91W Journey-X GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9352</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">225/45ZR17 94W Journey-X GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9307</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">205/50ZR17 Quest-X 93Y XL</span></td>
+                    <td data-label="CANTIDAD"><b>48</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9308</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/55ZR17 Quest-X 98W XL</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9309</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">225/50ZR17 Quest-X 98Y XL</span></td>
+                    <td data-label="CANTIDAD"><b>88</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9310</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">225/55ZR17 Quest-X 97W</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9357</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">235/55ZR19 105W Quest-X GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>80</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9360</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">255/50ZR20    109/XL/Y  GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9361</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">275/50ZR20113/XL/Y  GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9365</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">265/70R16112/T  GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9324</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/60R17 Quest-X SUV H/T 96 H</span></td>
+                    <td data-label="CANTIDAD"><b>28</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9362</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">265/65R17116/H  GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9364</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">265/60R18110/H  GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9363</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">265/70R17115/T  GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00514-1</td>
+                    <td data-label="CÓDIGO">ANV9313</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">195R15C-8PR SUPERANGE-Van 106/104S</span></td>
+                    <td data-label="CANTIDAD"><b>52</b></td>
+                    <td data-label="ETD">11/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/02/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV9008</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">235/75R17.516PR SR516 TL STEPRISING </span></td>
+                    <td data-label="CANTIDAD"><b>250</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV9035</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12R22.5 18PR SR219 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>90</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV9036</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR688 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>37</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV9013</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>140</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV9036</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR688 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>103</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV9036</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR688 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>50</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV9023</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 12.00R24  20PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>155</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV7001</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">22.5X8.25 Artillero | ET 120</span></td>
+                    <td data-label="CANTIDAD"><b>16</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-3</td>
+                    <td data-label="CÓDIGO">ANV7007</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">17.5X6.75 | 6 Pernos 32.5 mm, Círculo de Pernos 222.25mm, Copa 164mm, ET 127</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">06/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">02/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9014</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>240</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9017</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR 156/150M SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>240</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9012</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12R22.5 18PR 152/149M SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>200</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9027</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">275/70R22.5&nbsp;18PR SR198 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>54</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9016</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5R17.518PR SR516TL STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>150</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9022</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 9.5R17.5  18PR SR518 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>120</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9033</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5R17.5--18PR  SR828 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9033</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5R17.5--18PR  SR828 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9007</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/75R17. 516PR SR516 TL STEPRISING </span></td>
+                    <td data-label="CANTIDAD"><b>193</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9007</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/75R17. 516PR SR516 TL STEPRISING </span></td>
+                    <td data-label="CANTIDAD"><b>27</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00238-2.0</td>
+                    <td data-label="CÓDIGO">ANV9027</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">275/70R22.5&nbsp;18PR SR198 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>25</b></td>
+                    <td data-label="ETD">28/12/2025</td>
+                    <td data-label="ETA"><b class="text-success">03/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9312</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">195R14C-6PR SUPERANGE-Van 102/100S</span></td>
+                    <td data-label="CANTIDAD"><b>250</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9301</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">185/60R15 Journey-X 88H XL</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9313</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">195R15C-8PR SUPERANGE-Van 106/104S</span></td>
+                    <td data-label="CANTIDAD"><b>250</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9326</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">195/55R15  85V Journey-X</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9302</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">205/70R15 Journey-X 96H</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9303</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">195/60R16 Journey-X 89H</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9304</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">205/60R16 Journey-X 92V</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9323</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/65R16 Journey-X HP 98H</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9307</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">205/50ZR17 Quest-X 93Y XL</span></td>
+                    <td data-label="CANTIDAD"><b>56</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9306</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/50ZR17&nbsp; Journey-X 95W XL</span></td>
+                    <td data-label="CANTIDAD"><b>36</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9308</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/55ZR17 Quest-X 98W XL</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9309</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">225/50ZR17 Quest-X 98Y XL</span></td>
+                    <td data-label="CANTIDAD"><b>52</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9310</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">225/55ZR17 Quest-X 97W</span></td>
+                    <td data-label="CANTIDAD"><b>52</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9325</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">235/65R17 Quest-X SUV H/T 108 H XL</span></td>
+                    <td data-label="CANTIDAD"><b>36</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9336</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">225/45ZR18  Quest-X  95Y XL</span></td>
+                    <td data-label="CANTIDAD"><b>36</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00515</td>
+                    <td data-label="CÓDIGO">ANV9356</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">235/50ZR19 103Y Quest-X GREENTRAC</span></td>
+                    <td data-label="CANTIDAD"><b>32</b></td>
+                    <td data-label="ETD">07/02/2026</td>
+                    <td data-label="ETA"><b class="text-success">24/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9249</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">10.00-16 10PR F2(4RIB) TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9250</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">11.00-16 12PR F2(4RIB) TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9252</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5-24 8PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>10</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9253</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.4-24 12PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9254</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.4-24 8PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>14</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9255</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-24 12PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9256</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-24 12PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>42</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9257</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-26 12PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9258</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">23.1-26 18PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9260</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">23.1-30 14PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9261</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-34 10PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9262</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-38 12PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9263</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">20.8-38 12PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9264</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">11L-16TL 12PR F-3 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9265</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.5/75-16.1TL 10PR F-3 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9266</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">16.5/70-18 18PR IMP100  TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9242</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.5/80-18-12PR TL IMP600 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>36</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9233</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">6.50-10-12PR TT PLT328 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>18</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9234</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-12-14PR TT PLT328 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>18</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9235</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">8.25-15-16PR TT PLT328 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9227</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-12  SP900  ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>16</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9226</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">28*9-15  SP900  ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-1</td>
+                    <td data-label="CÓDIGO">ANV9236</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5-14PR TL L4B ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>41</b></td>
+                    <td data-label="ETD">28/01/2026</td>
+                    <td data-label="ETA"><b class="text-success">28/03/2026</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00236-4</td>
+                    <td data-label="CÓDIGO">ANV9026</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR168 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>126</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00236-4</td>
+                    <td data-label="CÓDIGO">ANV9026</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR168 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>114</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8020</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube  750-16  TR177A</span></td>
+                    <td data-label="CANTIDAD"><b>720</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8021</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube1100-16TR15</span></td>
+                    <td data-label="CANTIDAD"><b>400</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8022</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube1200-20TR78A</span></td>
+                    <td data-label="CANTIDAD"><b>402</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8023</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube1200-24TR78A</span></td>
+                    <td data-label="CANTIDAD"><b>400</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8024</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube1400-24TR179A</span></td>
+                    <td data-label="CANTIDAD"><b>52</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8025</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube17.5R25TR179A</span></td>
+                    <td data-label="CANTIDAD"><b>42</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8026</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube20.5-25TR179A</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8027</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube23.5-25TR179A</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8028</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube26.5-25TR179A</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8029</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube14.9-24TR218A</span></td>
+                    <td data-label="CANTIDAD"><b>200</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8030</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube14.9-28TR218A</span></td>
+                    <td data-label="CANTIDAD"><b>204</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8031</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube18.4-30TR218A</span></td>
+                    <td data-label="CANTIDAD"><b>100</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8032</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube18.4-34TR218A</span></td>
+                    <td data-label="CANTIDAD"><b>100</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8033</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube23.1-26TR218A</span></td>
+                    <td data-label="CANTIDAD"><b>100</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8034</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube23.1-30TR218A</span></td>
+                    <td data-label="CANTIDAD"><b>100</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8035</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Inner Tube23.1-34TR218A</span></td>
+                    <td data-label="CANTIDAD"><b>100</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8100</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Flap750-16</span></td>
+                    <td data-label="CANTIDAD"><b>720</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8101</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Flap1200-20</span></td>
+                    <td data-label="CANTIDAD"><b>400</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8102</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Flap1200-24</span></td>
+                    <td data-label="CANTIDAD"><b>400</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8103</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Flap1400-24</span></td>
+                    <td data-label="CANTIDAD"><b>50</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8104</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Flap17.5R25</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8105</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Flap20.5-25</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8106</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Flap23.5-25</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00237</td>
+                    <td data-label="CÓDIGO">ANV8107</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">Flap26.5-25</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN007001 - CANCELADA</td>
+                    <td data-label="CÓDIGO">ANV9533</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT275/70R17 121R DESTINATION X/T </span></td>
+                    <td data-label="CANTIDAD"><b>88</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN007001 - CANCELADA</td>
+                    <td data-label="CÓDIGO">ANV9534</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT265/70R18 124S DESTINATION XT</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN007001 - CANCELADA</td>
+                    <td data-label="CÓDIGO">ANV9535</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT275/70R18 125S DESTINATION XT </span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN007001 - CANCELADA</td>
+                    <td data-label="CÓDIGO">ANV9536</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT285/65R18 125R DESTINATION X/T</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN007001 - CANCELADA</td>
+                    <td data-label="CÓDIGO">ANV9542</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT35X12.50R18 123R DESTINATION XT </span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN007001 - CANCELADA</td>
+                    <td data-label="CÓDIGO">ANV9537</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT265/60R20 121S DESTINATION X/T</span></td>
+                    <td data-label="CANTIDAD"><b>44</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN007001 - CANCELADA</td>
+                    <td data-label="CÓDIGO">ANV9538</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT275/55R20 120R DESTINATION X/T</span></td>
+                    <td data-label="CANTIDAD"><b>44</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN007001 - CANCELADA</td>
+                    <td data-label="CÓDIGO">ANV9539</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT275/60R20 123R DESTINATION X/T</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9401</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">23.5R25  CB763  E-4/L-4  185B/201A2  ★★ CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9402</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">24.00R35 CB771 E-4 212B ★★★ CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9403</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">26.5R25 CB763 E-4/L-4 193B/209A2 ★★ CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9404</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">27.00R49 CB788 E-4 223B ★★ CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9405</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">29.5R25 CB763/WR04 E-4/L-4 200B/216A2 ★★ CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9406</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">35/65R33 CB790 L-5 229A2 ★★★ CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9407</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">16×5×10 1/2[TR] TR PressOn  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9408</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">21×7×15[TR] TR PressOn  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9409</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">5.00-8/3.0R CL403S CL403S Resilent  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9410</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">6.00-9/4.0R CL403S CL403S Resilent  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9411</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-12/5.0R CL403S CL403S Resilent  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9412</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">28×9-15/6.5R CL403S CL403S Resilent  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9413</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-15/5.5R CL403S CL403S Resilent  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9414</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">8.25-15/5.5R CL403S CL403S Resilent  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00801</td>
+                    <td data-label="CÓDIGO">ANV9415</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">16×6×10 1/2[TR] TR PressOn  CHAOYANG</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9053</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.50R16LT 16PR SR168</span></td>
+                    <td data-label="CANTIDAD"><b>200</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9016</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5R17.518PR SR516TL STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>100</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9022</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 9.5R17.5  18PR SR518 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>200</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9033</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5R17.5--18PR  SR828 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>400</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9007</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/75R17. 516PR SR516 TL STEPRISING </span></td>
+                    <td data-label="CANTIDAD"><b>100</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9037</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/75R17.5 16PR  SR518 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9008</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">235/75R17.516PR SR516 TL STEPRISING </span></td>
+                    <td data-label="CANTIDAD"><b>180</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9044</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">265/70R19.5 18PR SR516</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9006</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">8.25R20 16PR SR168 TT SET STEPRISING </span></td>
+                    <td data-label="CANTIDAD"><b>560</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9019</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.00R20 16PR SR168 TT SET STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9020</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">11.00R20 18PR SR168 TT SET STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>120</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9021</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.00R20 20PR SR168 TT SET STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>140</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9012</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12R22.5 18PR 152/149M SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>90</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9011</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12R22.5 18PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>160</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9013</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>620</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9028</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR TL SR219 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9026</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR168 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>504</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9017</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR 156/150M SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>320</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9029</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR TL SR399 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9045</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR868</span></td>
+                    <td data-label="CANTIDAD"><b>220</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9030</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR TL XTR189 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>160</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9036</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR688 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>80</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9014</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>180</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00239</td>
+                    <td data-label="CÓDIGO">ANV9023</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 12.00R24  20PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9251</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">405/70-20 14PR R1 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9259</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-28 10PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9201</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">11L-15 8PR I-1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9202</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">11L-16 8PR I-1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9230</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">300-15-20PR TT PLT328 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9245</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">16.00-25 40PR L5S TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>4</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9246</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.00-25 40PR L5S TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>4</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9216</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.00-24 16PR L-2/G-2 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9218</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">17.5-25 16PR L-2/E-2 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9267</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">23.5-25 16PR L-2/E-2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9268</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">15.5-25 16PR L3/E3 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9219</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">17.5-25 16PR L-3/E-3 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>18</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9269</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.00-25 16PR E-3/L-3 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9247</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.00-24 24PR NE3 TL</span></td>
+                    <td data-label="CANTIDAD"><b>4</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9211</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5 12PR RG400 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>50</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9212</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5 14PR RG600 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>39</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9236</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5-14PR TL L4B ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9213</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14-17.5 14PR RG500 NHS TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9204</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">19.5L-24 16PR L-5B TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9209</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">16.9-28 12PR R-4A TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00315-2</td>
+                    <td data-label="CÓDIGO">ANV9270</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.00-33 40PR NE4B PA TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">estara lista el 07/ de feb</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9053</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.50R16LT 16PR SR168</span></td>
+                    <td data-label="CANTIDAD"><b>300</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9016</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5R17.518PR SR516TL STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>540</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9022</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 9.5R17.5  18PR SR518 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>140</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9033</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5R17.5--18PR  SR828 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>140</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9007</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">215/75R17. 516PR SR516 TL STEPRISING </span></td>
+                    <td data-label="CANTIDAD"><b>80</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9008</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">235/75R17.516PR SR516 TL STEPRISING </span></td>
+                    <td data-label="CANTIDAD"><b>80</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9019</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.00R20 16PR SR168 TT SET STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9020</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">11.00R20 18PR SR168 TT SET STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9021</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.00R20 20PR SR168 TT SET STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>40</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9011</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12R22.5 18PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9031</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">255/70R22.5 16PR TL SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>310</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9027</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">275/70R22.5&nbsp;18PR SR198 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>640</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9013</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>520</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9026</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 18PR SR168 TL STEPPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>260</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9017</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR 156/150M SR198 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>480</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9045</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR868</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9014</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">315/80R22.5 20PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>120</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00240</td>
+                    <td data-label="CÓDIGO">ANV9023</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 12.00R24  20PR SR168 STEPRISING</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00702</td>
+                    <td data-label="CÓDIGO">ANV9543</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">295/80R22.5 R269  BRIDGESTONE</span></td>
+                    <td data-label="CANTIDAD"><b>232</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9242</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.5/80-18-12PR TL IMP600 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>24</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9252</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">9.5-24 8PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>10</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9253</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.4-24 12PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9254</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12.4-24 8PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>24</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9255</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-24 12PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>24</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9256</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-24 12PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>44</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9257</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-26 12PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9258</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">23.1-26 18PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>14</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9275</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-28-12 R1 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9259</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.9-28 10PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>22</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9260</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">23.1-30 14PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9271</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 9.5-32 8PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9272</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 30.5L-32 18PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>4</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9273</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc"> 18.4-34 12PR R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9261</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-34 10PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9274</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-38 16PR  R1 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9262</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.4-38 12PR R2 TT ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9225</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">6.50-10  SP900  ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>30</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9233</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">6.50-10-12PR TT PLT328 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>16</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9234</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-12-14PR TT PLT328 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9227</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">7.00-12  SP900  ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>20</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9230</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">300-15-20PR TT PLT328 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>18</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9235</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">8.25-15-16PR TT PLT328 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9211</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5 12PR RG400 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>76</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9236</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5-14PR TL L4B ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>76</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9244</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">33X12-20 (8,0KG) AW-2 ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>4</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9212</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">12-16.5 14PR RG600 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>36</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9213</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14-17.5 14PR RG500 NHS TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>6</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9247</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.00-24 24PR NE3 TL</span></td>
+                    <td data-label="CANTIDAD"><b>16</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9216</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">14.00-24 16PR L-2/G-2 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>54</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9203</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">19.5L-24 14PR R-4A TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>12</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9204</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">19.5L-24 16PR L-5B TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>10</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9241</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">16.00-25-32PR TL NE3 PA ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9219</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">17.5-25 16PR L-3/E-3 TL ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>8</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00316</td>
+                    <td data-label="CÓDIGO">ANV9237</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">18.00-25-40PR TL NE4B ARMOUR</span></td>
+                    <td data-label="CANTIDAD"><b>3</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00516</td>
+                    <td data-label="CÓDIGO">ANV9327</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT265/75R16-10PR  Rough Master X/T 123 / 120S</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00516</td>
+                    <td data-label="CÓDIGO">ANV9315</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT235/80R17-10PR Rough Master X/T 120 / 117R</span></td>
+                    <td data-label="CANTIDAD"><b>300</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00516</td>
+                    <td data-label="CÓDIGO">ANV9332</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT285/70R17-10PR 121 / 118S Rough Master X/T</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00516</td>
+                    <td data-label="CÓDIGO">ANV9317</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">245/70R16 Rough Master X/T 113T XL</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00516</td>
+                    <td data-label="CÓDIGO">ANV9318</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">265/70R16 Rough Master X/T 112T</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00516</td>
+                    <td data-label="CÓDIGO">ANV9322</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">285/50R20 Rough Master X/T 116H</span></td>
+                    <td data-label="CANTIDAD"><b>60</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00902</td>
+                    <td data-label="CÓDIGO">ANV1901</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT265/75R16 123/120R  ALIX  IMPACT A/T PLUS</span></td>
+                    <td data-label="CANTIDAD"><b>1.040</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr><tr>
+                    <td data-label="OC" class="fw-bold text-primary">AN00902</td>
+                    <td data-label="CÓDIGO">ANV1902</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">LT265/70R17 123/120S ALIX  IMPACT A/T PLUS</span></td>
+                    <td data-label="CANTIDAD"><b>1.040</b></td>
+                    <td data-label="ETD">TBD</td>
+                    <td data-label="ETA"><b class="text-muted">TBD</b></td>
+                </tr></tbody></table>
+    </div>
+
+    <div class="footer">
+        <div class="container d-grid gap-2">
+            <input type="file" id="excelInput" style="display:none">
+            <button class="btn btn-dark btn-sm fw-bold" onclick="document.getElementById('excelInput').click()">1. CARGAR EXCEL</button>
+            <button id="saveBtn" class="btn btn-success btn-sm fw-bold" onclick="doExport()">2. LISTO PARA WHATSAPP</button>
+        </div>
+    </div>
+
+    <script>
+        let db = [{"oc":"AN00314-2","cod":"ANV9248","desc":"7.00-15LT/12 T4  ARMOUR","cant":50,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos tbs anv9248 7.00-15lt/12 t4  armour"},{"oc":"AN00314-2","cod":"ANV9202","desc":"11L-16 8PR I-1 TT ARMOUR","cant":5,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos ids anv9202 11l-16 8pr i-1 tt armour"},{"oc":"AN00314-2","cod":"ANV9227","desc":"7.00-12  SP900  ARMOUR","cant":2,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos mtc anv9227 7.00-12  sp900  armour"},{"oc":"AN00314-2","cod":"ANV9239","desc":"26.5-25-28PR TL L5 ARMOUR","cant":6,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos ors anv9239 26.5-25-28pr tl l5 armour"},{"oc":"AN00314-2","cod":"ANV9221","desc":"23.5-25 20PR L-3/E-3 TL ARMOUR","cant":10,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos ors anv9221 23.5-25 20pr l-3/e-3 tl armour"},{"oc":"AN00314-2","cod":"ANV9212","desc":"12-16.5 14PR RG600 TL ARMOUR","cant":32,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos ors anv9212 12-16.5 14pr rg600 tl armour"},{"oc":"AN00314-2","cod":"ANV9236","desc":"12-16.5-14PR TL L4B ARMOUR","cant":32,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos ids anv9236 12-16.5-14pr tl l4b armour"},{"oc":"AN00314-2","cod":"ANV9203","desc":"19.5L-24 14PR R-4A TL ARMOUR","cant":26,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos ids anv9203 19.5l-24 14pr r-4a tl armour"},{"oc":"AN00314-2","cod":"ANV9209","desc":"16.9-28 12PR R-4A TL ARMOUR","cant":14,"etd":"12/12/2025","eta":"01/02/2026","search":"pt cauchos ids anv9209 16.9-28 12pr r-4a tl armour"},{"oc":"AN00410","cod":"ANV9122","desc":"7.00-16 12PR QH672  SET FORERUNNER ","cant":8,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tds anv9122 7.00-16 12pr qh672  set forerunner"},{"oc":"AN00410","cod":"ANV9102","desc":"13.6-24 10PR QH651 R-2 TT SET FORERUNNER ","cant":4,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9102 13.6-24 10pr qh651 r-2 tt set forerunner"},{"oc":"AN00410","cod":"ANV9115","desc":"14.9-24 12PR QH611 R-1 TT SET FORERUNNER ","cant":28,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9115 14.9-24 12pr qh611 r-1 tt set forerunner"},{"oc":"AN00410","cod":"ANV9103","desc":"14.9-24 12PR QH651 R-2 TT SET FORERUNNER ","cant":4,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9103 14.9-24 12pr qh651 r-2 tt set forerunner"},{"oc":"AN00410","cod":"ANV9109","desc":"23.1-30 16PR QH651 R-2 TT FORERUNNER ","cant":14,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9109 23.1-30 16pr qh651 r-2 tt forerunner"},{"oc":"AN00410","cod":"ANV9107","desc":"20.8-38 12PR QH651 R-2 TT SET FORERUNNER ","cant":14,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9107 20.8-38 12pr qh651 r-2 tt set forerunner"},{"oc":"AN00410","cod":"ANV9111","desc":"12.4-24 12PR QH611 R-1 TT SET FORERUNNER ","cant":44,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9111 12.4-24 12pr qh611 r-1 tt set forerunner"},{"oc":"AN00410","cod":"ANV9121","desc":"6.50-16 10PR QH671 TT SET FORERUNNER ","cant":80,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tds anv9121 6.50-16 10pr qh671 tt set forerunner"},{"oc":"AN00410","cod":"ANV9126","desc":"9.5-24 8PR QH611 R-1 TT SET FORERUNNER","cant":18,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9126 9.5-24 8pr qh611 r-1 tt set forerunner"},{"oc":"AN00410","cod":"ANV9101","desc":"12.4-24 12PR QH651 R-2 TT SET FORERUNNER ","cant":6,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9101 12.4-24 12pr qh651 r-2 tt set forerunner"},{"oc":"AN00410","cod":"ANV9102","desc":"13.6-24 10PR QH651 R-2 TT SET FORERUNNER ","cant":30,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9102 13.6-24 10pr qh651 r-2 tt set forerunner"},{"oc":"AN00410","cod":"ANV9103","desc":"14.9-24 12PR QH651 R-2 TT SET FORERUNNER ","cant":6,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9103 14.9-24 12pr qh651 r-2 tt set forerunner"},{"oc":"AN00410","cod":"ANV9123","desc":"14.9-28 12PR QH612 R-1 TT SET FORERUNNER","cant":30,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9123 14.9-28 12pr qh612 r-1 tt set forerunner"},{"oc":"AN00410","cod":"ANV9105","desc":"18.4-30 12PR QH651 R-2 TT SET FORERUNNER ","cant":10,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9105 18.4-30 12pr qh651 r-2 tt set forerunner"},{"oc":"AN00410","cod":"ANV9106","desc":"18.4-38 12PR QH651 R-2 TT SET FORERUNNER ","cant":14,"etd":"05/12/2025","eta":"02/02/2026","search":"pt cauchos tts anv9106 18.4-38 12pr qh651 r-2 tt set forerunner"},{"oc":"AN00236-3","cod":"ANV9031","desc":"255/70R22.5 16PR TL SR198 STEPRISING","cant":160,"etd":"06/01/2026","eta":"14/02/2026","search":"pt cauchos tbr anv9031 255/70r22.5 16pr tl sr198 steprising"},{"oc":"AN00236-3","cod":"ANV9026","desc":"295/80R22.5 18PR SR168 TL STEPPRISING","cant":140,"etd":"06/01/2026","eta":"14/02/2026","search":"pt cauchos tbr anv9026 295/80r22.5 18pr sr168 tl stepprising"},{"oc":"AN00236-3","cod":"ANV9013","desc":"295/80R22.5 18PR SR198 STEPRISING","cant":140,"etd":"06/01/2026","eta":"14/02/2026","search":"pt cauchos tbr anv9013 295/80r22.5 18pr sr198 steprising"},{"oc":"AN00236-3","cod":"ANV9026","desc":"295/80R22.5 18PR SR168 TL STEPPRISING","cant":124,"etd":"06/01/2026","eta":"14/02/2026","search":"pt cauchos tbr anv9026 295/80r22.5 18pr sr168 tl stepprising"},{"oc":"AN00901","cod":"ANV1901","desc":"LT265/75R16 123/120R  ALIX  IMPACT A/T PLUS","cant":520,"etd":"05/01/2026","eta":"14/02/2026","search":"pt cauchos ltr anv1901 lt265/75r16 123/120r  alix  impact a/t plus"},{"oc":"AN00238-2.1","cod":"ANV9011","desc":"12R22.5 18PR SR168 STEPRISING","cant":65,"etd":"28/12/2025","eta":"17/02/2026","search":"pt cauchos tbr anv9011 12r22.5 18pr sr168 steprising"},{"oc":"AN00238-2.1","cod":"ANV9027","desc":"275/70R22.5 18PR SR198 TL STEPPRISING","cant":107,"etd":"28/12/2025","eta":"17/02/2026","search":"pt cauchos tbr anv9027 275/70r22.5 18pr sr198 tl stepprising"},{"oc":"AN00238-2.1","cod":"ANV9017","desc":"315/80R22.5 20PR 156/150M SR198 STEPRISING","cant":60,"etd":"28/12/2025","eta":"17/02/2026","search":"pt cauchos tbr anv9017 315/80r22.5 20pr 156/150m sr198 steprising"},{"oc":"AN00238-2.1","cod":"ANV9014","desc":"315/80R22.5 20PR SR168 STEPRISING","cant":10,"etd":"28/12/2025","eta":"17/02/2026","search":"pt cauchos tbr anv9014 315/80r22.5 20pr sr168 steprising"},{"oc":"AN00238-2.1","cod":"ANV9043","desc":" 12.00R24 20PR SR298","cant":20,"etd":"28/12/2025","eta":"17/02/2026","search":"pt cauchos tbr anv9043  12.00r24 20pr sr298"},{"oc":"AN00238-2.1","cod":"ANV9027","desc":"275/70R22.5 18PR SR198 TL STEPPRISING","cant":64,"etd":"28/12/2025","eta":"17/02/2026","search":"pt cauchos tbr anv9027 275/70r22.5 18pr sr198 tl stepprising"},{"oc":"AN00238-2.1","cod":"ANV9013","desc":"295/80R22.5 18PR SR198 STEPRISING","cant":210,"etd":"28/12/2025","eta":"17/02/2026","search":"pt cauchos tbr anv9013 295/80r22.5 18pr sr198 steprising"},{"oc":"AN00514-1","cod":"ANV9301","desc":"185/60R15 Journey-X 88H XL","cant":60,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9301 185/60r15 journey-x 88h xl"},{"oc":"AN00514-1","cod":"ANV9345","desc":"185/65R15 92H Journey-X GREENTRAC","cant":72,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9345 185/65r15 92h journey-x greentrac"},{"oc":"AN00514-1","cod":"ANV9346","desc":"195/50R15 82V Journey-X GREENTRAC","cant":52,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9346 195/50r15 82v journey-x greentrac"},{"oc":"AN00514-1","cod":"ANV9326","desc":"195/55R15  85V Journey-X","cant":52,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9326 195/55r15  85v journey-x"},{"oc":"AN00514-1","cod":"ANV9347","desc":"195/65R15 91V Journey-X GREENTRAC","cant":20,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9347 195/65r15 91v journey-x greentrac"},{"oc":"AN00514-1","cod":"ANV9348","desc":"205/65R15 94H Journey-X GREENTRAC","cant":52,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9348 205/65r15 94h journey-x greentrac"},{"oc":"AN00514-1","cod":"ANV9302","desc":"205/70R15 Journey-X 96H","cant":52,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9302 205/70r15 journey-x 96h"},{"oc":"AN00514-1","cod":"ANV9304","desc":"205/60R16 Journey-X 92V","cant":32,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9304 205/60r16 journey-x 92v"},{"oc":"AN00514-1","cod":"ANV9323","desc":"215/65R16 Journey-X HP 98H","cant":32,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9323 215/65r16 journey-x hp 98h"},{"oc":"AN00514-1","cod":"ANV9351","desc":"215/45ZR17 91W Journey-X GREENTRAC","cant":20,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9351 215/45zr17 91w journey-x greentrac"},{"oc":"AN00514-1","cod":"ANV9352","desc":"225/45ZR17 94W Journey-X GREENTRAC","cant":40,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9352 225/45zr17 94w journey-x greentrac"},{"oc":"AN00514-1","cod":"ANV9307","desc":"205/50ZR17 Quest-X 93Y XL","cant":48,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9307 205/50zr17 quest-x 93y xl"},{"oc":"AN00514-1","cod":"ANV9308","desc":"215/55ZR17 Quest-X 98W XL","cant":20,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9308 215/55zr17 quest-x 98w xl"},{"oc":"AN00514-1","cod":"ANV9309","desc":"225/50ZR17 Quest-X 98Y XL","cant":88,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9309 225/50zr17 quest-x 98y xl"},{"oc":"AN00514-1","cod":"ANV9310","desc":"225/55ZR17 Quest-X 97W","cant":60,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9310 225/55zr17 quest-x 97w"},{"oc":"AN00514-1","cod":"ANV9357","desc":"235/55ZR19 105W Quest-X GREENTRAC","cant":80,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9357 235/55zr19 105w quest-x greentrac"},{"oc":"AN00514-1","cod":"ANV9360","desc":"255/50ZR20    109/XL/Y  GREENTRAC","cant":12,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos ltr anv9360 255/50zr20    109/xl/y  greentrac"},{"oc":"AN00514-1","cod":"ANV9361","desc":"275/50ZR20113/XL/Y  GREENTRAC","cant":20,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos ltr anv9361 275/50zr20113/xl/y  greentrac"},{"oc":"AN00514-1","cod":"ANV9365","desc":"265/70R16112/T  GREENTRAC","cant":20,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos ltr anv9365 265/70r16112/t  greentrac"},{"oc":"AN00514-1","cod":"ANV9324","desc":"215/60R17 Quest-X SUV H/T 96 H","cant":28,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos ltr anv9324 215/60r17 quest-x suv h/t 96 h"},{"oc":"AN00514-1","cod":"ANV9362","desc":"265/65R17116/H  GREENTRAC","cant":20,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos ltr anv9362 265/65r17116/h  greentrac"},{"oc":"AN00514-1","cod":"ANV9364","desc":"265/60R18110/H  GREENTRAC","cant":12,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos ltr anv9364 265/60r18110/h  greentrac"},{"oc":"AN00514-1","cod":"ANV9363","desc":"265/70R17115/T  GREENTRAC","cant":12,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos ltr anv9363 265/70r17115/t  greentrac"},{"oc":"AN00514-1","cod":"ANV9313","desc":"195R15C-8PR SUPERANGE-Van 106/104S","cant":52,"etd":"11/01/2026","eta":"28/02/2026","search":"pt cauchos psr anv9313 195r15c-8pr superange-van 106/104s"},{"oc":"AN00238-3","cod":"ANV9008","desc":"235/75R17.516PR SR516 TL STEPRISING ","cant":250,"etd":"06/01/2026","eta":"02/03/2026","search":"pt cauchos tbr anv9008 235/75r17.516pr sr516 tl steprising"},{"oc":"AN00238-3","cod":"ANV9035","desc":"12R22.5 18PR SR219 STEPRISING","cant":90,"etd":"06/01/2026","eta":"02/03/2026","search":"pt cauchos tbr anv9035 12r22.5 18pr sr219 steprising"},{"oc":"AN00238-3","cod":"ANV9036","desc":"315/80R22.5 20PR SR688 STEPRISING","cant":37,"etd":"06/01/2026","eta":"02/03/2026","search":"pt cauchos tbr anv9036 315/80r22.5 20pr sr688 steprising"},{"oc":"AN00238-3","cod":"ANV9013","desc":"295/80R22.5 18PR SR198 STEPRISING","cant":140,"etd":"06/01/2026","eta":"02/03/2026","search":"pt cauchos tbr anv9013 295/80r22.5 18pr sr198 steprising"},{"oc":"AN00238-3","cod":"ANV9036","desc":"315/80R22.5 20PR SR688 STEPRISING","cant":103,"etd":"06/01/2026","eta":"02/03/2026","search":"pt cauchos tbr anv9036 315/80r22.5 20pr sr688 steprising"},{"oc":"AN00238-3","cod":"ANV9036","desc":"315/80R22.5 20PR SR688 STEPRISING","cant":50,"etd":"06/01/2026","eta":"02/03/2026","search":"pt cauchos tbr anv9036 315/80r22.5 20pr sr688 steprising"},{"oc":"AN00238-3","cod":"ANV9023","desc":" 12.00R24  20PR SR168 STEPRISING","cant":155,"etd":"06/01/2026","eta":"02/03/2026","search":"pt cauchos tbr anv9023  12.00r24  20pr sr168 steprising"},{"oc":"AN00238-3","cod":"ANV7001","desc":"22.5X8.25 Artillero | ET 120","cant":16,"etd":"06/01/2026","eta":"02/03/2026","search":"pt rines rines anv7001 22.5x8.25 artillero | et 120"},{"oc":"AN00238-3","cod":"ANV7007","desc":"17.5X6.75 | 6 Pernos 32.5 mm, Círculo de Pernos 222.25mm, Copa 164mm, ET 127","cant":20,"etd":"06/01/2026","eta":"02/03/2026","search":"pt rines rines anv7007 17.5x6.75 | 6 pernos 32.5 mm, círculo de pernos 222.25mm, copa 164mm, et 127"},{"oc":"AN00238-2.0","cod":"ANV9014","desc":"315/80R22.5 20PR SR168 STEPRISING","cant":240,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9014 315/80r22.5 20pr sr168 steprising"},{"oc":"AN00238-2.0","cod":"ANV9017","desc":"315/80R22.5 20PR 156/150M SR198 STEPRISING","cant":240,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9017 315/80r22.5 20pr 156/150m sr198 steprising"},{"oc":"AN00238-2.0","cod":"ANV9012","desc":"12R22.5 18PR 152/149M SR198 STEPRISING","cant":200,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9012 12r22.5 18pr 152/149m sr198 steprising"},{"oc":"AN00238-2.0","cod":"ANV9027","desc":"275/70R22.5 18PR SR198 TL STEPPRISING","cant":54,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9027 275/70r22.5 18pr sr198 tl stepprising"},{"oc":"AN00238-2.0","cod":"ANV9016","desc":"9.5R17.518PR SR516TL STEPRISING","cant":150,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9016 9.5r17.518pr sr516tl steprising"},{"oc":"AN00238-2.0","cod":"ANV9022","desc":" 9.5R17.5  18PR SR518 STEPRISING","cant":120,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9022  9.5r17.5  18pr sr518 steprising"},{"oc":"AN00238-2.0","cod":"ANV9033","desc":"9.5R17.5--18PR  SR828 STEPRISING","cant":20,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9033 9.5r17.5--18pr  sr828 steprising"},{"oc":"AN00238-2.0","cod":"ANV9033","desc":"9.5R17.5--18PR  SR828 STEPRISING","cant":20,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9033 9.5r17.5--18pr  sr828 steprising"},{"oc":"AN00238-2.0","cod":"ANV9007","desc":"215/75R17. 516PR SR516 TL STEPRISING ","cant":193,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9007 215/75r17. 516pr sr516 tl steprising"},{"oc":"AN00238-2.0","cod":"ANV9007","desc":"215/75R17. 516PR SR516 TL STEPRISING ","cant":27,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9007 215/75r17. 516pr sr516 tl steprising"},{"oc":"AN00238-2.0","cod":"ANV9027","desc":"275/70R22.5 18PR SR198 TL STEPPRISING","cant":25,"etd":"28/12/2025","eta":"03/03/2026","search":"pt cauchos tbr anv9027 275/70r22.5 18pr sr198 tl stepprising"},{"oc":"AN00515","cod":"ANV9312","desc":"195R14C-6PR SUPERANGE-Van 102/100S","cant":250,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9312 195r14c-6pr superange-van 102/100s"},{"oc":"AN00515","cod":"ANV9301","desc":"185/60R15 Journey-X 88H XL","cant":32,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9301 185/60r15 journey-x 88h xl"},{"oc":"AN00515","cod":"ANV9313","desc":"195R15C-8PR SUPERANGE-Van 106/104S","cant":250,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9313 195r15c-8pr superange-van 106/104s"},{"oc":"AN00515","cod":"ANV9326","desc":"195/55R15  85V Journey-X","cant":32,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9326 195/55r15  85v journey-x"},{"oc":"AN00515","cod":"ANV9302","desc":"205/70R15 Journey-X 96H","cant":32,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9302 205/70r15 journey-x 96h"},{"oc":"AN00515","cod":"ANV9303","desc":"195/60R16 Journey-X 89H","cant":40,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9303 195/60r16 journey-x 89h"},{"oc":"AN00515","cod":"ANV9304","desc":"205/60R16 Journey-X 92V","cant":32,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9304 205/60r16 journey-x 92v"},{"oc":"AN00515","cod":"ANV9323","desc":"215/65R16 Journey-X HP 98H","cant":32,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9323 215/65r16 journey-x hp 98h"},{"oc":"AN00515","cod":"ANV9307","desc":"205/50ZR17 Quest-X 93Y XL","cant":56,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9307 205/50zr17 quest-x 93y xl"},{"oc":"AN00515","cod":"ANV9306","desc":"215/50ZR17  Journey-X 95W XL","cant":36,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9306 215/50zr17  journey-x 95w xl"},{"oc":"AN00515","cod":"ANV9308","desc":"215/55ZR17 Quest-X 98W XL","cant":32,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9308 215/55zr17 quest-x 98w xl"},{"oc":"AN00515","cod":"ANV9309","desc":"225/50ZR17 Quest-X 98Y XL","cant":52,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9309 225/50zr17 quest-x 98y xl"},{"oc":"AN00515","cod":"ANV9310","desc":"225/55ZR17 Quest-X 97W","cant":52,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9310 225/55zr17 quest-x 97w"},{"oc":"AN00515","cod":"ANV9325","desc":"235/65R17 Quest-X SUV H/T 108 H XL","cant":36,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos ltr anv9325 235/65r17 quest-x suv h/t 108 h xl"},{"oc":"AN00515","cod":"ANV9336","desc":"225/45ZR18  Quest-X  95Y XL","cant":36,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9336 225/45zr18  quest-x  95y xl"},{"oc":"AN00515","cod":"ANV9356","desc":"235/50ZR19 103Y Quest-X GREENTRAC","cant":32,"etd":"07/02/2026","eta":"24/03/2026","search":"pt cauchos psr anv9356 235/50zr19 103y quest-x greentrac"},{"oc":"AN00315-1","cod":"ANV9249","desc":"10.00-16 10PR F2(4RIB) TT ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tds anv9249 10.00-16 10pr f2(4rib) tt armour"},{"oc":"AN00315-1","cod":"ANV9250","desc":"11.00-16 12PR F2(4RIB) TT ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tds anv9250 11.00-16 12pr f2(4rib) tt armour"},{"oc":"AN00315-1","cod":"ANV9252","desc":"9.5-24 8PR R1 TT ARMOUR","cant":10,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9252 9.5-24 8pr r1 tt armour"},{"oc":"AN00315-1","cod":"ANV9253","desc":"12.4-24 12PR R1 TT ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9253 12.4-24 12pr r1 tt armour"},{"oc":"AN00315-1","cod":"ANV9254","desc":"12.4-24 8PR R2 TT ARMOUR","cant":14,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9254 12.4-24 8pr r2 tt armour"},{"oc":"AN00315-1","cod":"ANV9255","desc":"14.9-24 12PR R1 TT ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9255 14.9-24 12pr r1 tt armour"},{"oc":"AN00315-1","cod":"ANV9256","desc":"14.9-24 12PR R2 TT ARMOUR","cant":42,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9256 14.9-24 12pr r2 tt armour"},{"oc":"AN00315-1","cod":"ANV9257","desc":"18.4-26 12PR R1 TT ARMOUR","cant":6,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9257 18.4-26 12pr r1 tt armour"},{"oc":"AN00315-1","cod":"ANV9258","desc":"23.1-26 18PR R2 TT ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9258 23.1-26 18pr r2 tt armour"},{"oc":"AN00315-1","cod":"ANV9260","desc":"23.1-30 14PR R2 TT ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9260 23.1-30 14pr r2 tt armour"},{"oc":"AN00315-1","cod":"ANV9261","desc":"18.4-34 10PR R2 TT ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9261 18.4-34 10pr r2 tt armour"},{"oc":"AN00315-1","cod":"ANV9262","desc":"18.4-38 12PR R2 TT ARMOUR","cant":6,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9262 18.4-38 12pr r2 tt armour"},{"oc":"AN00315-1","cod":"ANV9263","desc":"20.8-38 12PR R2 TT ARMOUR","cant":6,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tts anv9263 20.8-38 12pr r2 tt armour"},{"oc":"AN00315-1","cod":"ANV9264","desc":"11L-16TL 12PR F-3 ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tds anv9264 11l-16tl 12pr f-3 armour"},{"oc":"AN00315-1","cod":"ANV9265","desc":"14.5/75-16.1TL 10PR F-3 ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tds anv9265 14.5/75-16.1tl 10pr f-3 armour"},{"oc":"AN00315-1","cod":"ANV9266","desc":"16.5/70-18 18PR IMP100  TT ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos tds anv9266 16.5/70-18 18pr imp100  tt armour"},{"oc":"AN00315-1","cod":"ANV9242","desc":"12.5/80-18-12PR TL IMP600 ARMOUR","cant":36,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos ids anv9242 12.5/80-18-12pr tl imp600 armour"},{"oc":"AN00315-1","cod":"ANV9233","desc":"6.50-10-12PR TT PLT328 ARMOUR","cant":18,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos ids anv9233 6.50-10-12pr tt plt328 armour"},{"oc":"AN00315-1","cod":"ANV9234","desc":"7.00-12-14PR TT PLT328 ARMOUR","cant":18,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos ids anv9234 7.00-12-14pr tt plt328 armour"},{"oc":"AN00315-1","cod":"ANV9235","desc":"8.25-15-16PR TT PLT328 ARMOUR","cant":8,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos ids anv9235 8.25-15-16pr tt plt328 armour"},{"oc":"AN00315-1","cod":"ANV9227","desc":"7.00-12  SP900  ARMOUR","cant":16,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos mtc anv9227 7.00-12  sp900  armour"},{"oc":"AN00315-1","cod":"ANV9226","desc":"28*9-15  SP900  ARMOUR","cant":12,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos mtc anv9226 28*9-15  sp900  armour"},{"oc":"AN00315-1","cod":"ANV9236","desc":"12-16.5-14PR TL L4B ARMOUR","cant":41,"etd":"28/01/2026","eta":"28/03/2026","search":"pt cauchos ids anv9236 12-16.5-14pr tl l4b armour"},{"oc":"AN00236-4","cod":"ANV9026","desc":"295/80R22.5 18PR SR168 TL STEPPRISING","cant":126,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9026 295/80r22.5 18pr sr168 tl stepprising"},{"oc":"AN00236-4","cod":"ANV9026","desc":"295/80R22.5 18PR SR168 TL STEPPRISING","cant":114,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9026 295/80r22.5 18pr sr168 tl stepprising"},{"oc":"AN00237","cod":"ANV8020","desc":"Inner Tube  750-16  TR177A","cant":720,"etd":"TBD","eta":"TBD","search":"pt tripas tds anv8020 inner tube  750-16  tr177a"},{"oc":"AN00237","cod":"ANV8021","desc":"Inner Tube1100-16TR15","cant":400,"etd":"TBD","eta":"TBD","search":"pt tripas tds anv8021 inner tube1100-16tr15"},{"oc":"AN00237","cod":"ANV8022","desc":"Inner Tube1200-20TR78A","cant":402,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8022 inner tube1200-20tr78a"},{"oc":"AN00237","cod":"ANV8023","desc":"Inner Tube1200-24TR78A","cant":400,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8023 inner tube1200-24tr78a"},{"oc":"AN00237","cod":"ANV8024","desc":"Inner Tube1400-24TR179A","cant":52,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8024 inner tube1400-24tr179a"},{"oc":"AN00237","cod":"ANV8025","desc":"Inner Tube17.5R25TR179A","cant":42,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8025 inner tube17.5r25tr179a"},{"oc":"AN00237","cod":"ANV8026","desc":"Inner Tube20.5-25TR179A","cant":40,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8026 inner tube20.5-25tr179a"},{"oc":"AN00237","cod":"ANV8027","desc":"Inner Tube23.5-25TR179A","cant":40,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8027 inner tube23.5-25tr179a"},{"oc":"AN00237","cod":"ANV8028","desc":"Inner Tube26.5-25TR179A","cant":20,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8028 inner tube26.5-25tr179a"},{"oc":"AN00237","cod":"ANV8029","desc":"Inner Tube14.9-24TR218A","cant":200,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8029 inner tube14.9-24tr218a"},{"oc":"AN00237","cod":"ANV8030","desc":"Inner Tube14.9-28TR218A","cant":204,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8030 inner tube14.9-28tr218a"},{"oc":"AN00237","cod":"ANV8031","desc":"Inner Tube18.4-30TR218A","cant":100,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8031 inner tube18.4-30tr218a"},{"oc":"AN00237","cod":"ANV8032","desc":"Inner Tube18.4-34TR218A","cant":100,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8032 inner tube18.4-34tr218a"},{"oc":"AN00237","cod":"ANV8033","desc":"Inner Tube23.1-26TR218A","cant":100,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8033 inner tube23.1-26tr218a"},{"oc":"AN00237","cod":"ANV8034","desc":"Inner Tube23.1-30TR218A","cant":100,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8034 inner tube23.1-30tr218a"},{"oc":"AN00237","cod":"ANV8035","desc":"Inner Tube23.1-34TR218A","cant":100,"etd":"TBD","eta":"TBD","search":"pt tripas tts anv8035 inner tube23.1-34tr218a"},{"oc":"AN00237","cod":"ANV8100","desc":"Flap750-16","cant":720,"etd":"TBD","eta":"TBD","search":"pt protector tds anv8100 flap750-16"},{"oc":"AN00237","cod":"ANV8101","desc":"Flap1200-20","cant":400,"etd":"TBD","eta":"TBD","search":"pt protector tts anv8101 flap1200-20"},{"oc":"AN00237","cod":"ANV8102","desc":"Flap1200-24","cant":400,"etd":"TBD","eta":"TBD","search":"pt protector tts anv8102 flap1200-24"},{"oc":"AN00237","cod":"ANV8103","desc":"Flap1400-24","cant":50,"etd":"TBD","eta":"TBD","search":"pt protector tts anv8103 flap1400-24"},{"oc":"AN00237","cod":"ANV8104","desc":"Flap17.5R25","cant":40,"etd":"TBD","eta":"TBD","search":"pt protector tts anv8104 flap17.5r25"},{"oc":"AN00237","cod":"ANV8105","desc":"Flap20.5-25","cant":40,"etd":"TBD","eta":"TBD","search":"pt protector tts anv8105 flap20.5-25"},{"oc":"AN00237","cod":"ANV8106","desc":"Flap23.5-25","cant":40,"etd":"TBD","eta":"TBD","search":"pt protector tts anv8106 flap23.5-25"},{"oc":"AN00237","cod":"ANV8107","desc":"Flap26.5-25","cant":20,"etd":"TBD","eta":"TBD","search":"pt protector tts anv8107 flap26.5-25"},{"oc":"AN007001 - CANCELADA","cod":"ANV9533","desc":"LT275/70R17 121R DESTINATION X/T ","cant":88,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9533 lt275/70r17 121r destination x/t"},{"oc":"AN007001 - CANCELADA","cod":"ANV9534","desc":"LT265/70R18 124S DESTINATION XT","cant":40,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9534 lt265/70r18 124s destination xt"},{"oc":"AN007001 - CANCELADA","cod":"ANV9535","desc":"LT275/70R18 125S DESTINATION XT ","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9535 lt275/70r18 125s destination xt"},{"oc":"AN007001 - CANCELADA","cod":"ANV9536","desc":"LT285/65R18 125R DESTINATION X/T","cant":40,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9536 lt285/65r18 125r destination x/t"},{"oc":"AN007001 - CANCELADA","cod":"ANV9542","desc":"LT35X12.50R18 123R DESTINATION XT ","cant":40,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9542 lt35x12.50r18 123r destination xt"},{"oc":"AN007001 - CANCELADA","cod":"ANV9537","desc":"LT265/60R20 121S DESTINATION X/T","cant":44,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9537 lt265/60r20 121s destination x/t"},{"oc":"AN007001 - CANCELADA","cod":"ANV9538","desc":"LT275/55R20 120R DESTINATION X/T","cant":44,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9538 lt275/55r20 120r destination x/t"},{"oc":"AN007001 - CANCELADA","cod":"ANV9539","desc":"LT275/60R20 123R DESTINATION X/T","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9539 lt275/60r20 123r destination x/t"},{"oc":"AN00801","cod":"ANV9401","desc":"23.5R25  CB763  E-4/L-4  185B/201A2  ★★ CHAOYANG","cant":12,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9401 23.5r25  cb763  e-4/l-4  185b/201a2  ★★ chaoyang"},{"oc":"AN00801","cod":"ANV9402","desc":"24.00R35 CB771 E-4 212B ★★★ CHAOYANG","cant":8,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9402 24.00r35 cb771 e-4 212b ★★★ chaoyang"},{"oc":"AN00801","cod":"ANV9403","desc":"26.5R25 CB763 E-4/L-4 193B/209A2 ★★ CHAOYANG","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9403 26.5r25 cb763 e-4/l-4 193b/209a2 ★★ chaoyang"},{"oc":"AN00801","cod":"ANV9404","desc":"27.00R49 CB788 E-4 223B ★★ CHAOYANG","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9404 27.00r49 cb788 e-4 223b ★★ chaoyang"},{"oc":"AN00801","cod":"ANV9405","desc":"29.5R25 CB763/WR04 E-4/L-4 200B/216A2 ★★ CHAOYANG","cant":8,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9405 29.5r25 cb763/wr04 e-4/l-4 200b/216a2 ★★ chaoyang"},{"oc":"AN00801","cod":"ANV9406","desc":"35/65R33 CB790 L-5 229A2 ★★★ CHAOYANG","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9406 35/65r33 cb790 l-5 229a2 ★★★ chaoyang"},{"oc":"AN00801","cod":"ANV9407","desc":"16×5×10 1/2[TR] TR PressOn  CHAOYANG","cant":30,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9407 16×5×10 1/2[tr] tr presson  chaoyang"},{"oc":"AN00801","cod":"ANV9408","desc":"21×7×15[TR] TR PressOn  CHAOYANG","cant":30,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9408 21×7×15[tr] tr presson  chaoyang"},{"oc":"AN00801","cod":"ANV9409","desc":"5.00-8/3.0R CL403S CL403S Resilent  CHAOYANG","cant":30,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9409 5.00-8/3.0r cl403s cl403s resilent  chaoyang"},{"oc":"AN00801","cod":"ANV9410","desc":"6.00-9/4.0R CL403S CL403S Resilent  CHAOYANG","cant":30,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9410 6.00-9/4.0r cl403s cl403s resilent  chaoyang"},{"oc":"AN00801","cod":"ANV9411","desc":"7.00-12/5.0R CL403S CL403S Resilent  CHAOYANG","cant":30,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9411 7.00-12/5.0r cl403s cl403s resilent  chaoyang"},{"oc":"AN00801","cod":"ANV9412","desc":"28×9-15/6.5R CL403S CL403S Resilent  CHAOYANG","cant":30,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9412 28×9-15/6.5r cl403s cl403s resilent  chaoyang"},{"oc":"AN00801","cod":"ANV9413","desc":"7.00-15/5.5R CL403S CL403S Resilent  CHAOYANG","cant":20,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9413 7.00-15/5.5r cl403s cl403s resilent  chaoyang"},{"oc":"AN00801","cod":"ANV9414","desc":"8.25-15/5.5R CL403S CL403S Resilent  CHAOYANG","cant":20,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9414 8.25-15/5.5r cl403s cl403s resilent  chaoyang"},{"oc":"AN00801","cod":"ANV9415","desc":"16×6×10 1/2[TR] TR PressOn  CHAOYANG","cant":30,"etd":"TBD","eta":"TBD","search":"pt cauchos orr anv9415 16×6×10 1/2[tr] tr presson  chaoyang"},{"oc":"AN00239","cod":"ANV9053","desc":"7.50R16LT 16PR SR168","cant":200,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9053 7.50r16lt 16pr sr168"},{"oc":"AN00239","cod":"ANV9016","desc":"9.5R17.518PR SR516TL STEPRISING","cant":100,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9016 9.5r17.518pr sr516tl steprising"},{"oc":"AN00239","cod":"ANV9022","desc":" 9.5R17.5  18PR SR518 STEPRISING","cant":200,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9022  9.5r17.5  18pr sr518 steprising"},{"oc":"AN00239","cod":"ANV9033","desc":"9.5R17.5--18PR  SR828 STEPRISING","cant":400,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9033 9.5r17.5--18pr  sr828 steprising"},{"oc":"AN00239","cod":"ANV9007","desc":"215/75R17. 516PR SR516 TL STEPRISING ","cant":100,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9007 215/75r17. 516pr sr516 tl steprising"},{"oc":"AN00239","cod":"ANV9037","desc":"215/75R17.5 16PR  SR518 STEPRISING","cant":40,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9037 215/75r17.5 16pr  sr518 steprising"},{"oc":"AN00239","cod":"ANV9008","desc":"235/75R17.516PR SR516 TL STEPRISING ","cant":180,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9008 235/75r17.516pr sr516 tl steprising"},{"oc":"AN00239","cod":"ANV9044","desc":"265/70R19.5 18PR SR516","cant":20,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9044 265/70r19.5 18pr sr516"},{"oc":"AN00239","cod":"ANV9006","desc":"8.25R20 16PR SR168 TT SET STEPRISING ","cant":560,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9006 8.25r20 16pr sr168 tt set steprising"},{"oc":"AN00239","cod":"ANV9019","desc":"9.00R20 16PR SR168 TT SET STEPRISING","cant":40,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9019 9.00r20 16pr sr168 tt set steprising"},{"oc":"AN00239","cod":"ANV9020","desc":"11.00R20 18PR SR168 TT SET STEPRISING","cant":120,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9020 11.00r20 18pr sr168 tt set steprising"},{"oc":"AN00239","cod":"ANV9021","desc":"12.00R20 20PR SR168 TT SET STEPRISING","cant":140,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9021 12.00r20 20pr sr168 tt set steprising"},{"oc":"AN00239","cod":"ANV9012","desc":"12R22.5 18PR 152/149M SR198 STEPRISING","cant":90,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9012 12r22.5 18pr 152/149m sr198 steprising"},{"oc":"AN00239","cod":"ANV9011","desc":"12R22.5 18PR SR168 STEPRISING","cant":160,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9011 12r22.5 18pr sr168 steprising"},{"oc":"AN00239","cod":"ANV9013","desc":"295/80R22.5 18PR SR198 STEPRISING","cant":620,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9013 295/80r22.5 18pr sr198 steprising"},{"oc":"AN00239","cod":"ANV9028","desc":"295/80R22.5 18PR TL SR219 STEPRISING","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9028 295/80r22.5 18pr tl sr219 steprising"},{"oc":"AN00239","cod":"ANV9026","desc":"295/80R22.5 18PR SR168 TL STEPPRISING","cant":504,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9026 295/80r22.5 18pr sr168 tl stepprising"},{"oc":"AN00239","cod":"ANV9017","desc":"315/80R22.5 20PR 156/150M SR198 STEPRISING","cant":320,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9017 315/80r22.5 20pr 156/150m sr198 steprising"},{"oc":"AN00239","cod":"ANV9029","desc":"315/80R22.5 20PR TL SR399 STEPRISING","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9029 315/80r22.5 20pr tl sr399 steprising"},{"oc":"AN00239","cod":"ANV9045","desc":"315/80R22.5 20PR SR868","cant":220,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9045 315/80r22.5 20pr sr868"},{"oc":"AN00239","cod":"ANV9030","desc":"315/80R22.5 20PR TL XTR189 STEPRISING","cant":160,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9030 315/80r22.5 20pr tl xtr189 steprising"},{"oc":"AN00239","cod":"ANV9036","desc":"315/80R22.5 20PR SR688 STEPRISING","cant":80,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9036 315/80r22.5 20pr sr688 steprising"},{"oc":"AN00239","cod":"ANV9014","desc":"315/80R22.5 20PR SR168 STEPRISING","cant":180,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9014 315/80r22.5 20pr sr168 steprising"},{"oc":"AN00239","cod":"ANV9023","desc":" 12.00R24  20PR SR168 STEPRISING","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9023  12.00r24  20pr sr168 steprising"},{"oc":"AN00315-2","cod":"ANV9251","desc":"405/70-20 14PR R1 TL ARMOUR","cant":12,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos tts anv9251 405/70-20 14pr r1 tl armour"},{"oc":"AN00315-2","cod":"ANV9259","desc":"14.9-28 10PR R2 TT ARMOUR","cant":30,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos tts anv9259 14.9-28 10pr r2 tt armour"},{"oc":"AN00315-2","cod":"ANV9201","desc":"11L-15 8PR I-1 TT ARMOUR","cant":6,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ids anv9201 11l-15 8pr i-1 tt armour"},{"oc":"AN00315-2","cod":"ANV9202","desc":"11L-16 8PR I-1 TT ARMOUR","cant":6,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ids anv9202 11l-16 8pr i-1 tt armour"},{"oc":"AN00315-2","cod":"ANV9230","desc":"300-15-20PR TT PLT328 ARMOUR","cant":8,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ids anv9230 300-15-20pr tt plt328 armour"},{"oc":"AN00315-2","cod":"ANV9245","desc":"16.00-25 40PR L5S TL ARMOUR","cant":4,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9245 16.00-25 40pr l5s tl armour"},{"oc":"AN00315-2","cod":"ANV9246","desc":"18.00-25 40PR L5S TL ARMOUR","cant":4,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9246 18.00-25 40pr l5s tl armour"},{"oc":"AN00315-2","cod":"ANV9216","desc":"14.00-24 16PR L-2/G-2 TL ARMOUR","cant":12,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9216 14.00-24 16pr l-2/g-2 tl armour"},{"oc":"AN00315-2","cod":"ANV9218","desc":"17.5-25 16PR L-2/E-2 TL ARMOUR","cant":8,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9218 17.5-25 16pr l-2/e-2 tl armour"},{"oc":"AN00315-2","cod":"ANV9267","desc":"23.5-25 16PR L-2/E-2 TT ARMOUR","cant":12,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9267 23.5-25 16pr l-2/e-2 tt armour"},{"oc":"AN00315-2","cod":"ANV9268","desc":"15.5-25 16PR L3/E3 TL ARMOUR","cant":12,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9268 15.5-25 16pr l3/e3 tl armour"},{"oc":"AN00315-2","cod":"ANV9219","desc":"17.5-25 16PR L-3/E-3 TL ARMOUR","cant":18,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9219 17.5-25 16pr l-3/e-3 tl armour"},{"oc":"AN00315-2","cod":"ANV9269","desc":"18.00-25 16PR E-3/L-3 TT ARMOUR","cant":12,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9269 18.00-25 16pr e-3/l-3 tt armour"},{"oc":"AN00315-2","cod":"ANV9247","desc":"14.00-24 24PR NE3 TL","cant":4,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9247 14.00-24 24pr ne3 tl"},{"oc":"AN00315-2","cod":"ANV9211","desc":"12-16.5 12PR RG400 TL ARMOUR","cant":50,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9211 12-16.5 12pr rg400 tl armour"},{"oc":"AN00315-2","cod":"ANV9212","desc":"12-16.5 14PR RG600 TL ARMOUR","cant":39,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9212 12-16.5 14pr rg600 tl armour"},{"oc":"AN00315-2","cod":"ANV9236","desc":"12-16.5-14PR TL L4B ARMOUR","cant":20,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ids anv9236 12-16.5-14pr tl l4b armour"},{"oc":"AN00315-2","cod":"ANV9213","desc":"14-17.5 14PR RG500 NHS TL ARMOUR","cant":6,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9213 14-17.5 14pr rg500 nhs tl armour"},{"oc":"AN00315-2","cod":"ANV9204","desc":"19.5L-24 16PR L-5B TL ARMOUR","cant":6,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ids anv9204 19.5l-24 16pr l-5b tl armour"},{"oc":"AN00315-2","cod":"ANV9209","desc":"16.9-28 12PR R-4A TL ARMOUR","cant":6,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ids anv9209 16.9-28 12pr r-4a tl armour"},{"oc":"AN00315-2","cod":"ANV9270","desc":"18.00-33 40PR NE4B PA TL ARMOUR","cant":8,"etd":"estara lista el 07/ de feb","eta":"TBD","search":"pt cauchos ors anv9270 18.00-33 40pr ne4b pa tl armour"},{"oc":"AN00240","cod":"ANV9053","desc":"7.50R16LT 16PR SR168","cant":300,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9053 7.50r16lt 16pr sr168"},{"oc":"AN00240","cod":"ANV9016","desc":"9.5R17.518PR SR516TL STEPRISING","cant":540,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9016 9.5r17.518pr sr516tl steprising"},{"oc":"AN00240","cod":"ANV9022","desc":" 9.5R17.5  18PR SR518 STEPRISING","cant":140,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9022  9.5r17.5  18pr sr518 steprising"},{"oc":"AN00240","cod":"ANV9033","desc":"9.5R17.5--18PR  SR828 STEPRISING","cant":140,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9033 9.5r17.5--18pr  sr828 steprising"},{"oc":"AN00240","cod":"ANV9007","desc":"215/75R17. 516PR SR516 TL STEPRISING ","cant":80,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9007 215/75r17. 516pr sr516 tl steprising"},{"oc":"AN00240","cod":"ANV9008","desc":"235/75R17.516PR SR516 TL STEPRISING ","cant":80,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9008 235/75r17.516pr sr516 tl steprising"},{"oc":"AN00240","cod":"ANV9019","desc":"9.00R20 16PR SR168 TT SET STEPRISING","cant":40,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9019 9.00r20 16pr sr168 tt set steprising"},{"oc":"AN00240","cod":"ANV9020","desc":"11.00R20 18PR SR168 TT SET STEPRISING","cant":40,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9020 11.00r20 18pr sr168 tt set steprising"},{"oc":"AN00240","cod":"ANV9021","desc":"12.00R20 20PR SR168 TT SET STEPRISING","cant":40,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9021 12.00r20 20pr sr168 tt set steprising"},{"oc":"AN00240","cod":"ANV9011","desc":"12R22.5 18PR SR168 STEPRISING","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9011 12r22.5 18pr sr168 steprising"},{"oc":"AN00240","cod":"ANV9031","desc":"255/70R22.5 16PR TL SR198 STEPRISING","cant":310,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9031 255/70r22.5 16pr tl sr198 steprising"},{"oc":"AN00240","cod":"ANV9027","desc":"275/70R22.5 18PR SR198 TL STEPPRISING","cant":640,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9027 275/70r22.5 18pr sr198 tl stepprising"},{"oc":"AN00240","cod":"ANV9013","desc":"295/80R22.5 18PR SR198 STEPRISING","cant":520,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9013 295/80r22.5 18pr sr198 steprising"},{"oc":"AN00240","cod":"ANV9026","desc":"295/80R22.5 18PR SR168 TL STEPPRISING","cant":260,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9026 295/80r22.5 18pr sr168 tl stepprising"},{"oc":"AN00240","cod":"ANV9017","desc":"315/80R22.5 20PR 156/150M SR198 STEPRISING","cant":480,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9017 315/80r22.5 20pr 156/150m sr198 steprising"},{"oc":"AN00240","cod":"ANV9045","desc":"315/80R22.5 20PR SR868","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9045 315/80r22.5 20pr sr868"},{"oc":"AN00240","cod":"ANV9014","desc":"315/80R22.5 20PR SR168 STEPRISING","cant":120,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9014 315/80r22.5 20pr sr168 steprising"},{"oc":"AN00240","cod":"ANV9023","desc":" 12.00R24  20PR SR168 STEPRISING","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9023  12.00r24  20pr sr168 steprising"},{"oc":"AN00702","cod":"ANV9543","desc":"295/80R22.5 R269  BRIDGESTONE","cant":232,"etd":"TBD","eta":"TBD","search":"pt cauchos tbr anv9543 295/80r22.5 r269  bridgestone"},{"oc":"AN00316","cod":"ANV9242","desc":"12.5/80-18-12PR TL IMP600 ARMOUR","cant":24,"etd":"TBD","eta":"TBD","search":"pt cauchos ids anv9242 12.5/80-18-12pr tl imp600 armour"},{"oc":"AN00316","cod":"ANV9252","desc":"9.5-24 8PR R1 TT ARMOUR","cant":10,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9252 9.5-24 8pr r1 tt armour"},{"oc":"AN00316","cod":"ANV9253","desc":"12.4-24 12PR R1 TT ARMOUR","cant":12,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9253 12.4-24 12pr r1 tt armour"},{"oc":"AN00316","cod":"ANV9254","desc":"12.4-24 8PR R2 TT ARMOUR","cant":24,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9254 12.4-24 8pr r2 tt armour"},{"oc":"AN00316","cod":"ANV9255","desc":"14.9-24 12PR R1 TT ARMOUR","cant":24,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9255 14.9-24 12pr r1 tt armour"},{"oc":"AN00316","cod":"ANV9256","desc":"14.9-24 12PR R2 TT ARMOUR","cant":44,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9256 14.9-24 12pr r2 tt armour"},{"oc":"AN00316","cod":"ANV9257","desc":"18.4-26 12PR R1 TT ARMOUR","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9257 18.4-26 12pr r1 tt armour"},{"oc":"AN00316","cod":"ANV9258","desc":"23.1-26 18PR R2 TT ARMOUR","cant":14,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9258 23.1-26 18pr r2 tt armour"},{"oc":"AN00316","cod":"ANV9275","desc":"14.9-28-12 R1 ARMOUR","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9275 14.9-28-12 r1 armour"},{"oc":"AN00316","cod":"ANV9259","desc":"14.9-28 10PR R2 TT ARMOUR","cant":22,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9259 14.9-28 10pr r2 tt armour"},{"oc":"AN00316","cod":"ANV9260","desc":"23.1-30 14PR R2 TT ARMOUR","cant":12,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9260 23.1-30 14pr r2 tt armour"},{"oc":"AN00316","cod":"ANV9271","desc":" 9.5-32 8PR R1 TT ARMOUR","cant":12,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9271  9.5-32 8pr r1 tt armour"},{"oc":"AN00316","cod":"ANV9272","desc":" 30.5L-32 18PR R1 TT ARMOUR","cant":4,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9272  30.5l-32 18pr r1 tt armour"},{"oc":"AN00316","cod":"ANV9273","desc":" 18.4-34 12PR R1 TT ARMOUR","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9273  18.4-34 12pr r1 tt armour"},{"oc":"AN00316","cod":"ANV9261","desc":"18.4-34 10PR R2 TT ARMOUR","cant":12,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9261 18.4-34 10pr r2 tt armour"},{"oc":"AN00316","cod":"ANV9274","desc":"18.4-38 16PR  R1 TT ARMOUR","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9274 18.4-38 16pr  r1 tt armour"},{"oc":"AN00316","cod":"ANV9262","desc":"18.4-38 12PR R2 TT ARMOUR","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos tts anv9262 18.4-38 12pr r2 tt armour"},{"oc":"AN00316","cod":"ANV9225","desc":"6.50-10  SP900  ARMOUR","cant":30,"etd":"TBD","eta":"TBD","search":"pt cauchos mtc anv9225 6.50-10  sp900  armour"},{"oc":"AN00316","cod":"ANV9233","desc":"6.50-10-12PR TT PLT328 ARMOUR","cant":16,"etd":"TBD","eta":"TBD","search":"pt cauchos ids anv9233 6.50-10-12pr tt plt328 armour"},{"oc":"AN00316","cod":"ANV9234","desc":"7.00-12-14PR TT PLT328 ARMOUR","cant":20,"etd":"TBD","eta":"TBD","search":"pt cauchos ids anv9234 7.00-12-14pr tt plt328 armour"},{"oc":"AN00316","cod":"ANV9227","desc":"7.00-12  SP900  ARMOUR","cant":20,"etd":"TBD","eta":"TBD","search":"pt cauchos mtc anv9227 7.00-12  sp900  armour"},{"oc":"AN00316","cod":"ANV9230","desc":"300-15-20PR TT PLT328 ARMOUR","cant":18,"etd":"TBD","eta":"TBD","search":"pt cauchos ids anv9230 300-15-20pr tt plt328 armour"},{"oc":"AN00316","cod":"ANV9235","desc":"8.25-15-16PR TT PLT328 ARMOUR","cant":8,"etd":"TBD","eta":"TBD","search":"pt cauchos ids anv9235 8.25-15-16pr tt plt328 armour"},{"oc":"AN00316","cod":"ANV9211","desc":"12-16.5 12PR RG400 TL ARMOUR","cant":76,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9211 12-16.5 12pr rg400 tl armour"},{"oc":"AN00316","cod":"ANV9236","desc":"12-16.5-14PR TL L4B ARMOUR","cant":76,"etd":"TBD","eta":"TBD","search":"pt cauchos ids anv9236 12-16.5-14pr tl l4b armour"},{"oc":"AN00316","cod":"ANV9244","desc":"33X12-20 (8,0KG) AW-2 ARMOUR","cant":4,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9244 33x12-20 (8,0kg) aw-2 armour"},{"oc":"AN00316","cod":"ANV9212","desc":"12-16.5 14PR RG600 TL ARMOUR","cant":36,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9212 12-16.5 14pr rg600 tl armour"},{"oc":"AN00316","cod":"ANV9213","desc":"14-17.5 14PR RG500 NHS TL ARMOUR","cant":6,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9213 14-17.5 14pr rg500 nhs tl armour"},{"oc":"AN00316","cod":"ANV9247","desc":"14.00-24 24PR NE3 TL","cant":16,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9247 14.00-24 24pr ne3 tl"},{"oc":"AN00316","cod":"ANV9216","desc":"14.00-24 16PR L-2/G-2 TL ARMOUR","cant":54,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9216 14.00-24 16pr l-2/g-2 tl armour"},{"oc":"AN00316","cod":"ANV9203","desc":"19.5L-24 14PR R-4A TL ARMOUR","cant":12,"etd":"TBD","eta":"TBD","search":"pt cauchos ids anv9203 19.5l-24 14pr r-4a tl armour"},{"oc":"AN00316","cod":"ANV9204","desc":"19.5L-24 16PR L-5B TL ARMOUR","cant":10,"etd":"TBD","eta":"TBD","search":"pt cauchos ids anv9204 19.5l-24 16pr l-5b tl armour"},{"oc":"AN00316","cod":"ANV9241","desc":"16.00-25-32PR TL NE3 PA ARMOUR","cant":8,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9241 16.00-25-32pr tl ne3 pa armour"},{"oc":"AN00316","cod":"ANV9219","desc":"17.5-25 16PR L-3/E-3 TL ARMOUR","cant":8,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9219 17.5-25 16pr l-3/e-3 tl armour"},{"oc":"AN00316","cod":"ANV9237","desc":"18.00-25-40PR TL NE4B ARMOUR","cant":3,"etd":"TBD","eta":"TBD","search":"pt cauchos ors anv9237 18.00-25-40pr tl ne4b armour"},{"oc":"AN00516","cod":"ANV9327","desc":"LT265/75R16-10PR  Rough Master X/T 123 / 120S","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9327 lt265/75r16-10pr  rough master x/t 123 / 120s"},{"oc":"AN00516","cod":"ANV9315","desc":"LT235/80R17-10PR Rough Master X/T 120 / 117R","cant":300,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9315 lt235/80r17-10pr rough master x/t 120 / 117r"},{"oc":"AN00516","cod":"ANV9332","desc":"LT285/70R17-10PR 121 / 118S Rough Master X/T","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9332 lt285/70r17-10pr 121 / 118s rough master x/t"},{"oc":"AN00516","cod":"ANV9317","desc":"245/70R16 Rough Master X/T 113T XL","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9317 245/70r16 rough master x/t 113t xl"},{"oc":"AN00516","cod":"ANV9318","desc":"265/70R16 Rough Master X/T 112T","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9318 265/70r16 rough master x/t 112t"},{"oc":"AN00516","cod":"ANV9322","desc":"285/50R20 Rough Master X/T 116H","cant":60,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv9322 285/50r20 rough master x/t 116h"},{"oc":"AN00902","cod":"ANV1901","desc":"LT265/75R16 123/120R  ALIX  IMPACT A/T PLUS","cant":1040,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv1901 lt265/75r16 123/120r  alix  impact a/t plus"},{"oc":"AN00902","cod":"ANV1902","desc":"LT265/70R17 123/120S ALIX  IMPACT A/T PLUS","cant":1040,"etd":"TBD","eta":"TBD","search":"pt cauchos ltr anv1902 lt265/70r17 123/120s alix  impact a/t plus"}];
+ let infoStr = "Act: 2/2/2026, 4:00:35 p. m.";
+
+        // Lógica de detección de WhatsApp
+        if (navigator.userAgent.indexOf("WhatsApp") > -1 || navigator.userAgent.indexOf("FBAN") > -1) {
+            document.getElementById('panicButton').style.display = 'block';
+        }
+
+        function forceExternal() {
+            // Intenta "sacar" al usuario del visor de WhatsApp
+            alert("Para buscar, toca los 3 puntos superiores y selecciona 'Abrir en el navegador'.");
+        }
+
+        window.onload = () => {
+            if (db.length > 0) {
+                document.getElementById('dateTag').innerText = infoStr;
+                document.getElementById('empty').style.display = 'none';
+                draw(db);
+            }
+        };
+
+        document.getElementById('excelInput').onchange = function(e) {
+            const reader = new FileReader();
+            reader.onload = function(f) {
+                const wb = XLSX.read(new Uint8Array(f.target.result), {type:'array', cellDates:true});
+                const sh = wb.Sheets[wb.SheetNames[0]];
+                const raw = XLSX.utils.sheet_to_json(sh, {defval:""});
+
+                db = raw.map(r => {
+                    const find = (t) => {
+                        const k = Object.keys(r).find(x => x.toLowerCase().includes(t.toLowerCase()));
+                        return k ? r[k] : '';
+                    };
+                    return {
+                        oc: find('OC Manual'),
+                        cod: find('Código Neumáticos'),
+                        desc: find('Descripción'),
+                        cant: parseInt(find('Cantidad')) || 0,
+                        etd: fmt(find('ETD')),
+                        eta: fmt(find('ETA')),
+                        search: (find('Concatenar') || find('Descripción') || '').toString().toLowerCase().trim()
+                    };
+                });
+
+                db.sort((a,b) => val(a.eta) - val(b.eta));
+                infoStr = "Act: " + new Date().toLocaleString();
+                document.getElementById('saveBtn').classList.remove('d-none');
+                document.getElementById('empty').style.display = 'none';
+                draw(db);
+            };
+            reader.readAsArrayBuffer(e.target.files[0]);
+        };
+
+        function fmt(v) {
+            if (!v) return 'TBD';
+            if (v instanceof Date) return v.getUTCDate().toString().padStart(2,'0') + "/" + (v.getUTCMonth()+1).toString().padStart(2,'0') + "/" + v.getUTCFullYear();
+            return v.toString().includes('-') ? v.split('-').reverse().join('/') : v;
+        }
+
+        function val(d) {
+            if (d === 'TBD') return 99999999;
+            const p = d.split('/');
+            return p.length === 3 ? parseInt(p[2]+p[1]+p[0]) : 99999998;
+        }
+
+        function runSearch() {
+            const s = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!s) { draw(db); return; }
+            const fil = db.filter(item => item.search.indexOf(s) !== -1);
+            draw(fil);
+            window.scrollTo(0,0);
+        }
+
+        function draw(data) {
+            const container = document.getElementById('mainDisplay');
+            container.innerHTML = '';
+            let total = 0;
+            const nf = new Intl.NumberFormat('es-VE');
+
+            data.forEach(i => {
+                total += i.cant;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td data-label="OC" class="fw-bold text-primary">${i.oc}</td>
+                    <td data-label="CÓDIGO">${i.cod}</td>
+                    <td data-label="DESCRIPCIÓN" class="desc-box"><span class="val-desc">${i.desc}</span></td>
+                    <td data-label="CANTIDAD"><b>${nf.format(i.cant)}</b></td>
+                    <td data-label="ETD">${i.etd}</td>
+                    <td data-label="ETA"><b class="${i.eta==='TBD'?'text-muted':'text-success'}">${i.eta}</b></td>
+                `;
+                container.appendChild(tr);
+            });
+            document.getElementById('totalCount').innerText = nf.format(total);
+        }
+
+        function doExport() {
+            const h = document.documentElement.outerHTML;
+            const p = `let db = ${JSON.stringify(db)};\n let infoStr = "${infoStr}";`;
+            const out = h.replace(/let db = \[\];[\s\n]+let infoStr = "";/, p);
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([out], {type:'text/html'}));
+            a.download = `Alice_Status.html`;
+            a.click();
+        }
+    </script>
+
+</body></html>
